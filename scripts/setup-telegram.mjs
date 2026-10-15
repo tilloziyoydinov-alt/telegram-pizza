@@ -2,7 +2,7 @@
 // Vercel'da har bir production build'dan keyin avtomatik ishlaydi; qo'lda: npm run telegram:setup -- https://sayt.uz
 import crypto from 'node:crypto';
 
-const token = process.env.BOT_TOKEN;
+const token = process.env.BOT_TOKEN?.trim().replace(/^['"]|['"]$/g, '');
 const isVercel = Boolean(process.env.VERCEL);
 const url =
   process.argv[2] ??

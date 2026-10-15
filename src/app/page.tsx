@@ -62,6 +62,9 @@ export default function HomePage() {
           {loadError && (
             <div className="empty">
               <p className="field-error">{loadError}</p>
+              <p className="muted">
+                Texnik tekshiruv: <a href="/api/health">/api/health</a>
+              </p>
               <Button onClick={loadProducts}>Qayta urinish</Button>
             </div>
           )}

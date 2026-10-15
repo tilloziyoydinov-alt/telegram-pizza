@@ -51,7 +51,7 @@ async function request<T>(path: string, init: RequestInit & { initData?: string 
   }
 
   const body = await response.json().catch(() => null);
-  if (!response.ok) throw new ApiError(body?.error ?? `Xatolik (${response.status})`, response.status);
+  if (!response.ok) throw new ApiError(`${body?.error ?? 'Xatolik'} (${response.status})`, response.status);
   return body as T;
 }
 
