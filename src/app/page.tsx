@@ -26,6 +26,8 @@ export default function HomePage() {
   const [tab, setTab] = useState<Tab>('menu');
   const [products, setProducts] = useState<Product[] | null>(null);
   const [loadError, setLoadError] = useState('');
+  // Xato bo'lsa — sababini ekranda ko'rsatish uchun /api/health hisoboti (maxfiy ma'lumotsiz)
+  const [diagnostics, setDiagnostics] = useState<Record<string, unknown> | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [successOrderId, setSuccessOrderId] = useState<number | null>(null);
 
@@ -37,6 +39,10 @@ export default function HomePage() {
       cart.syncWith(list);
     } catch (err) {
       setLoadError(err instanceof ApiError ? err.message : 'Menyuni yuklab bo‘lmadi');
+      fetch('/api/health', { cache: 'no-store' })
+        .then((r) => r.json())
+        .then(setDiagnostics)
+        .catch(() => setDiagnostics({ health: '❌ Server javob bermadi (deploy muvaffaqiyatsiz bo‘lgan bo‘lishi mumkin)' }));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -62,9 +68,16 @@ export default function HomePage() {
           {loadError && (
             <div className="empty">
               <p className="field-error">{loadError}</p>
-              <p className="muted">
-                Texnik tekshiruv: <a href="/api/health">/api/health</a>
-              </p>
+              {diagnostics ? (
+                <pre className="diagnostics">
+                  {Object.entries(diagnostics)
+                    .map(([k, v]) => `${k}: ${String(v)}`)
+                    .join('\n')}
+                </pre>
+              ) : (
+                <p className="muted">Sabab tekshirilmoqda…</p>
+              )}
+              <p className="muted">Shu ekranni skrinshot qilib dasturchiga yuboring.</p>
               <Button onClick={loadProducts}>Qayta urinish</Button>
             </div>
           )}

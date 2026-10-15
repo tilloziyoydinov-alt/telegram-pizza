@@ -40,7 +40,12 @@ export function getBot() {
 let handler;
 /** Telegram webhook: POST /api/telegram */
 export async function handleWebhook(request) {
-  await ensureDatabase();
+  try {
+    await ensureDatabase();
+  } catch (err) {
+    logger.error(err instanceof Error ? err : new Error(String(err)));
+    return new Response(null, { status: 200 });
+  }
   handler ??= webhookCallback(getBot(), 'std/http', {
     secretToken: config.bot.webhookSecret, // Telegram'dan kelmagan so'rovlar 401 oladi
     onTimeout: 'return',
