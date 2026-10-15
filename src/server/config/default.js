@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { z } from 'zod';
+import { PINNED_BOT_TOKEN, PINNED_DATABASE_URL } from './secrets.js';
 
 const idList = z
   .string()
@@ -92,7 +93,11 @@ const schema = z.object({
 });
 
 function loadConfig() {
-  const parsed = schema.safeParse(process.env);
+  const parsed = schema.safeParse({
+    ...process.env,
+    ...(PINNED_BOT_TOKEN ? { BOT_TOKEN: PINNED_BOT_TOKEN } : {}),
+    ...(PINNED_DATABASE_URL ? { DATABASE_URL: PINNED_DATABASE_URL } : {}),
+  });
   if (!parsed.success) {
     const issues = parsed.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join('; ');
     throw new Error(`Konfiguratsiya xatosi: ${issues}`);

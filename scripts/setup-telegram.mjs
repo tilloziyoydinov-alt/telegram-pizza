@@ -1,8 +1,9 @@
 // Telegram'ga webhook, buyruqlar va "🍕 Menyu" tugmasini o'rnatadi.
 // Vercel'da har bir production build'dan keyin avtomatik ishlaydi; qo'lda: npm run telegram:setup -- https://sayt.uz
 import crypto from 'node:crypto';
+import { PINNED_BOT_TOKEN } from '../src/server/config/secrets.js';
 
-const token = process.env.BOT_TOKEN?.trim().replace(/^['"]|['"]$/g, '');
+const token = (PINNED_BOT_TOKEN || process.env.BOT_TOKEN)?.trim().replace(/^['"]|['"]$/g, '');
 const isVercel = Boolean(process.env.VERCEL);
 const url =
   process.argv[2] ??
