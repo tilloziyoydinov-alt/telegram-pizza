@@ -1,0 +1,122 @@
+/* Telegram mavzusi ranglari (--tg-theme-*) SDK tomonidan o'rnatiladi; quyida brauzer uchun zaxira qiymatlar */
+:root {
+  --bg: var(--tg-theme-bg-color, #ffffff);
+  --bg-secondary: var(--tg-theme-secondary-bg-color, #f2f3f5);
+  --text: var(--tg-theme-text-color, #111111);
+  --hint: var(--tg-theme-hint-color, #8a8f98);
+  --accent: var(--tg-theme-button-color, #e2483d);
+  --accent-text: var(--tg-theme-button-text-color, #ffffff);
+  --danger: var(--tg-theme-destructive-text-color, #d93025);
+  --radius: 14px;
+  --nav-height: 64px;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: var(--tg-theme-bg-color, #17212b);
+    --bg-secondary: var(--tg-theme-secondary-bg-color, #0e1621);
+    --text: var(--tg-theme-text-color, #f5f5f5);
+    --hint: var(--tg-theme-hint-color, #7d8b99);
+  }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button { font: inherit; color: inherit; cursor: pointer; border: none; background: none; }
+h1 { font-size: 22px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; font-weight: 600; }
+
+.app { max-width: 640px; margin: 0 auto; padding: 16px 16px calc(var(--nav-height) + 24px); }
+.muted { color: var(--hint); font-size: 13px; }
+.center { text-align: center; padding: 32px 0; }
+.stack { display: flex; flex-direction: column; gap: 12px; }
+
+.header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+.card { background: var(--bg); border-radius: var(--radius); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+.product { display: flex; flex-direction: column; overflow: hidden; }
+.product-img { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--bg-secondary); padding: 12px; }
+.product-body { display: flex; flex-direction: column; gap: 6px; padding: 12px; flex: 1; }
+.product-body .muted { flex: 1; }
+.product-footer { display: flex; flex-direction: column; gap: 8px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  border-radius: 10px; font-weight: 600; transition: opacity .15s, transform .1s;
+}
+.btn:active { transform: scale(.97); }
+.btn:disabled { opacity: .6; cursor: default; }
+.btn-primary { background: var(--accent); color: var(--accent-text); }
+.btn-secondary { background: var(--bg-secondary); }
+.btn-ghost { color: var(--danger); }
+.btn-sm { padding: 8px 12px; font-size: 14px; }
+.btn-md { padding: 10px 16px; }
+.btn-lg { padding: 14px 20px; font-size: 16px; }
+.btn-block { width: 100%; }
+
+.qty { display: inline-flex; align-items: center; justify-content: space-between; background: var(--bg-secondary); border-radius: 10px; min-width: 104px; }
+.qty-btn { width: 36px; height: 36px; font-size: 20px; color: var(--accent); }
+.qty-value { min-width: 24px; text-align: center; font-weight: 600; }
+
+.icon-btn { width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; }
+
+.cart-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.cart-item { display: flex; align-items: center; gap: 10px; padding: 12px; }
+.cart-item-info { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.cart-total { display: flex; justify-content: space-between; font-size: 17px; padding: 16px 4px; }
+
+.order { padding: 12px; display: flex; flex-direction: column; gap: 6px; }
+.order-head { display: flex; justify-content: space-between; align-items: center; }
+
+.empty { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; padding: 40px 16px; grid-column: 1 / -1; }
+.empty-icon { font-size: 48px; }
+
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 13px; color: var(--hint); }
+.input {
+  width: 100%; padding: 12px; border-radius: 10px; font: inherit; color: var(--text);
+  background: var(--bg-secondary); border: 1.5px solid transparent; outline: none; resize: vertical;
+}
+.input:focus { border-color: var(--accent); }
+.input-error { border-color: var(--danger); }
+.field-error { color: var(--danger); font-size: 13px; }
+
+.modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); display: flex; align-items: flex-end; z-index: 50; animation: fade .15s; }
+.modal {
+  width: 100%; max-width: 640px; margin: 0 auto; max-height: 90vh; overflow-y: auto;
+  background: var(--bg); border-radius: 18px 18px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+  animation: slide-up .2s ease-out;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; height: calc(var(--nav-height) + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom); display: flex; background: var(--bg);
+  border-top: 1px solid var(--bg-secondary); z-index: 40;
+}
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; color: var(--hint); }
+.nav-item-active { color: var(--accent); font-weight: 600; }
+.nav-icon { position: relative; font-size: 20px; }
+.badge {
+  position: absolute; top: -6px; right: -12px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--accent); color: var(--accent-text); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+
+.spinner { width: 18px; height: 18px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+.spinner-lg { width: 32px; height: 32px; margin: 48px auto; color: var(--accent); grid-column: 1 / -1; }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fade { from { opacity: 0; } }
+@keyframes slide-up { from { transform: translateY(100%); } }
