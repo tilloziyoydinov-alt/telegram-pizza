@@ -3,20 +3,9 @@ import { Sequelize } from 'sequelize';
 import config from '../config/default.js';
 import logger from '../utils/logger.js';
 
-/**
- * Neon manzilidagi `sslmode`/`channel_binding` parametrlarini olib tashlab, SSL'ni aniq sozlaymiz:
- * sertifikat har doim tekshiriladi (rejectUnauthorized), pg ogohlantirishlari chiqmaydi.
- */
-function normalizeUrl(raw) {
-  const url = new URL(raw);
-  for (const key of ['sslmode', 'channel_binding', 'uselibpqcompat']) url.searchParams.delete(key);
-  return url.toString();
-}
+const isLocal = ['localhost', '127.0.0.1', 'db'].includes(new URL(config.db.url).hostname);
 
-const dbUrl = normalizeUrl(config.db.url);
-const isLocal = ['localhost', '127.0.0.1', 'db'].includes(new URL(dbUrl).hostname);
-
-export const sequelize = new Sequelize(dbUrl, {
+export const sequelize = new Sequelize(config.db.url, {
   dialect: 'postgres',
   dialectModule: pg, // bundler pg'ni topishi uchun aniq ko'rsatiladi
   logging: (sql) => logger.debug(sql),

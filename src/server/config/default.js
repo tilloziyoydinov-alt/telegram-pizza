@@ -11,8 +11,66 @@ const idList = z
 const clean = (v) => (typeof v === 'string' ? v.trim().replace(/^['"]|['"]$/g, '') : v);
 const optionalStr = z.preprocess((v) => (clean(v) === '' ? undefined : clean(v)), z.string().optional());
 
-/** Neon "Connect" oynasidan `psql 'postgresql://...'` ko'rinishida nusxalansa ham manzilni ajratib oladi */
-const extractDbUrl = (v) => (typeof v === 'string' ? (v.match(/postgres(?:ql)?:\/\/[^\s'"]+/)?.[0] ?? clean(v)) : v);
+/**
+ * Neon'dan qanday nusxalansa ham manzilni ajratib oladi: `psql '...'`, `DATABASE_URL=...`,
+ * qo'shtirnoqlar, o'rtada qolgan yangi qator/bo'sh joylar (to'g'ri manzilda bo'sh joy bo'lmaydi).
+ */
+const extractDbUrl = (v) => {
+  if (typeof v !== 'string') return v;
+  const start = v.search(/postgres(?:ql)?:\/\//);
+  if (start < 0) return clean(v);
+  let s = v.slice(start);
+  const quote = s.search(/['"]/);
+  if (quote >= 0) s = s.slice(0, quote);
+  return s.replace(/\s+/g, '');
+};
+
+/** Nima uchun manzil yaroqsizligini maxfiy qismini ko'rsatmasdan tushuntiradi */
+function describeBadDbUrl(raw) {
+  if (!/^postgres(?:ql)?:\/\//.test(raw)) return '"postgresql://" bilan boshlanmaydi — Neon → Connect oynasidagi to‘liq manzilni qo‘ying';
+  if (!raw.includes('@')) return '"@" belgisi yo‘q — manzil to‘liq nusxalanmagan';
+  if (!/@[^/]+\.[a-z]{2,}/i.test(raw) && !/@(localhost|127\.0\.0\.1|db)\b/.test(raw)) return 'server manzili (ep-....neon.tech) yo‘q — manzil oxirigacha nusxalanmagan';
+  if (!/@[^/]+\/[^/?]+/.test(raw)) return 'baza nomi (/neondb) yo‘q — manzil oxirigacha nusxalanmagan';
+  return `formati noto‘g‘ri (uzunligi ${raw.length} belgi)`;
+}
+
+/**
+ * postgres URL'ni tekshiradi va tozalaydi. Parolda maxsus belgilar (#, /, ?, @) kodlanmagan bo'lsa ham ishlaydi.
+ * sslmode/channel_binding olib tashlanadi — SSL connection.js'da aniq sozlanadi.
+ */
+function normalizeDbUrl(raw) {
+  const finish = (url) => {
+    for (const key of ['sslmode', 'channel_binding', 'uselibpqcompat']) url.searchParams.delete(key);
+    return url.toString();
+  };
+  if (/^postgres(?:ql)?:\/\/[^@]+@[^/]+\/[^/?]+/.test(raw)) {
+    try {
+      return finish(new URL(raw));
+    } catch {
+      // pastda qo'lda ajratib ko'ramiz
+    }
+  }
+  // user:parol@host/baza — parol oxirgi "@" gacha (maxsus belgilar bo'lishi mumkin)
+  const m = raw.match(/^(postgres(?:ql)?):\/\/([^:/@]+):(.*)@([^@/?#]+)\/([^?#/]+)(\?[^#]*)?$/);
+  if (m) {
+    try {
+      const [, scheme, user, password, host, db, query = ''] = m;
+      const enc = (x) => encodeURIComponent(decodeURIComponentSafe(x));
+      return finish(new URL(`${scheme}://${enc(user)}:${enc(password)}@${host}/${db}${query}`));
+    } catch {
+      // describeBadDbUrl tushuntiradi
+    }
+  }
+  throw new Error(`DATABASE_URL noto‘g‘ri: ${describeBadDbUrl(raw)}`);
+}
+
+function decodeURIComponentSafe(x) {
+  try {
+    return decodeURIComponent(x);
+  } catch {
+    return x;
+  }
+}
 
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -48,6 +106,8 @@ function loadConfig() {
   const dbUrl = env.DATABASE_URL ?? env.POSTGRES_URL;
   if (!dbUrl) throw new Error('Konfiguratsiya xatosi: DATABASE_URL topilmadi (Neon ulanish manzilini Vercel → Settings → Environment Variables ga qo‘shing)');
 
+  const normalizedDbUrl = normalizeDbUrl(dbUrl);
+
   return Object.freeze({
     isProd: env.NODE_ENV === 'production',
     bot: Object.freeze({
@@ -59,7 +119,7 @@ function loadConfig() {
       webhookSecret: crypto.createHash('sha256').update(`webhook:${env.BOT_TOKEN}`).digest('hex').slice(0, 48),
     }),
     webAppUrl,
-    db: Object.freeze({ url: dbUrl }),
+    db: Object.freeze({ url: normalizedDbUrl }),
     api: Object.freeze({ initDataMaxAgeSec: 24 * 60 * 60 }),
     log: Object.freeze({ level: env.LOG_LEVEL, dir: env.LOG_DIR }),
   });
